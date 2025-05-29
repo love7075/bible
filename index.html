@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>多版本圣经阅读网站</title>
+</head>
+
+<body>
+    <header>
+        <h2>多版本圣经阅读</h2>
+        <nav style="float: right;">
+            <a href="about.html">关于我 </a>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <label for="version-select">选择圣经版本:</label>
+
+            <select id="book-select"></select>
+            <select id="chapter-select"></select>
+            <label>
+                <input type="checkbox" id="compare-checkbox">
+                对照
+            </label>
+        </section>
+
+        <select id="version-select">
+            <option value="cnv">中文和合本</option>
+            <option value="niv">新国际版</option>
+            <option value="esv">英文标准版</option>
+        </select>
+
+        <section id="bible-text"></section>
+
+    </main>
+    <script src="bibleContentLoader.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

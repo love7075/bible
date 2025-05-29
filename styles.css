@@ -1,0 +1,96 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    background: #35424a;
+    color: #ffffff;
+    padding: 2px 0;
+    text-align: center;
+}
+
+main {
+    padding: 20px;
+}
+
+section {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+}
+
+label[for="compare-checkbox"] {
+    float: right;
+    margin-right: 16px;
+    font-size: 1rem;
+    user-select: none;
+}
+
+select {
+    margin-left: 10px;
+}
+
+#bible-text,
+#bible-text-compare {
+    border: 2px solid #bdbdbd;
+    background-color: #f7f7fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    clear: both;
+    word-break: normal;
+    overflow-wrap: break-word;
+    white-space: pre-line;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+
+
+#bible-text pre,
+#bible-text-compare pre {
+    white-space: pre-line;
+    word-break: normal;
+    overflow-wrap: break-word;
+    margin: 0;
+}
+
+#bible-parallel-outer {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+#bible-parallel-outer>.bible-parallel-wrapper {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+#bible-parallel-wrapper {
+    display: block;
+}
+
+#bible-parallel-wrapper>section,
+#bible-parallel-wrapper>select {
+    display: block;
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+a {
+    text-decoration: none;
+    /* 去除下划线 */
+    color: #4da6ff;
+    /* 浅蓝色 */
+}
+
+a:hover {
+    color: #007acc;
+    /* 悬停时更深的蓝色 */
+}

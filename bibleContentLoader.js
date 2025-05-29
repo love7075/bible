@@ -11,6 +11,16 @@ Gen 1:4 神看光是好的，就把光暗分开了。
 */
 const data = {}; //版本：书名：章节：[行]
 
+//数组的索引即为块索引，比如Gen第0个子数组，则块索引是0
+chunkBooks = [["Gen", "Exo", "Lev"], ["Lev", "Num", "Deu"],
+["Deu", "Jos", "Jug", "Rut", "1Sa"], ["1Sa", "2Sa", "1Ki",
+    "2Ki", "1Ch"], ["1Ch", "2Ch", "Ezr", "Neh", "Est", "Job"],
+["Job", "Psm", "Pro"], ["Pro", "Ecc", "Son", "Isa", "Jer"],
+["Jer", "Lam", "Eze", "Dan"], ["Dan", "Hos", "Joe", "Amo", "Oba",
+    "Jon", "Mic", "Nah", "Hab", "Zep", "Hag", "Zec", "Mal", "Mat", "Mak"],
+["Mak", "Luk", "Jhn", "Act"]]
+
+
 // 浏览器端fetch整文件并解析
 async function loadTxtFileBrowser(bibleId, bookId, chapterId) {
     const fileMap = {
@@ -62,7 +72,7 @@ async function fetchChunk(url, start, end) {
     }
 }
 
-// 分块查找章节内容
+// 分块查找章节内容（根据chunkBooks定位块）
 async function loadTxtFileChunkedBrowser(bibleId, bookId, chapterId) {
     const fileMap = {
         hgb: 'data/hgb.txt',
@@ -71,44 +81,43 @@ async function loadTxtFileChunkedBrowser(bibleId, bookId, chapterId) {
     const filePath = fileMap[bibleId] || fileMap['hgb'];
     const CHUNK_SIZE = 300 * 1024; // 300k
     const MAX_CHUNKS = 10;
-    let found = false;
-    let resultLines = [];
-    let leftover = '';
-    let offset = 0;
-    for (let i = 0; i < MAX_CHUNKS; i++) {
+    // 1. 查找bookId在哪个块
+    let targetIdx = chunkBooks.findIndex(arr => arr.map(b => b.toLowerCase()).includes(bookId.toLowerCase()));
+    if (targetIdx === -1) {
+        // 没找到，fallback全量
+        console.log(`[LOAD] 未找到 ${bibleId} ${bookId}，加载全量文件`);
+        return loadTxtFileBrowser(bibleId, bookId, chapterId);
+    }
+    // 2. 只加载目标块及前后1块
+    let chunks = [];
+    for (let i = Math.max(0, targetIdx - 1); i <= targetIdx + 1 && i < MAX_CHUNKS; i++) {
         let chunk = '';
         try {
-            chunk = leftover + await fetchChunk(filePath, offset, offset + CHUNK_SIZE - 1);
+            chunk = await fetchChunk(filePath, i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1);
         } catch (e) {
             // fallback: 服务器不支持Range，直接全量加载
-            if (i === 0) {
-                chunk = await fetchChunk(filePath, 0, 10 * CHUNK_SIZE);
-            } else {
-                break;
-            }
+            return loadTxtFileBrowser(bibleId, bookId, chapterId);
         }
-        const lines = chunk.split(/\r?\n/);
-        leftover = lines.pop(); // 可能是未完整的一行
-        for (let line of lines) {
-            const match = line.match(/^(\w{3,4})\s(\d+):(\d+)\s(.+)/);
-            if (match) {
-                const [_, book, chapter, verse, text] = match;
-                if (book.toLowerCase() === bookId.toLowerCase() && chapter === String(chapterId)) {
-                    resultLines.push(`<span class='verse'><b>${chapter}:${verse}</b> ${text}</span>`);
-                    found = true;
-                } else if (found && (book.toLowerCase() !== bookId.toLowerCase() || chapter !== String(chapterId))) {
-                    found = 'done';
-                    break;
-                } else if (found) {
-                    resultLines.push(`<span class='verse'><b>${chapter}:${verse}</b> ${text}</span>`);
-                }
-            }
-        }
-        offset += CHUNK_SIZE;
-        if (found === 'done') break;
+        chunks.push(chunk);
     }
-    console.log(resultLines.length, '行');
-
+    const allText = chunks.join('\n');
+    const lines = allText.split(/\r?\n/);
+    let resultLines = [];
+    let found = false;
+    for (let line of lines) {
+        const match = line.match(/^(\w{3,4})\s(\d+):(\d+)\s(.+)/);
+        if (match) {
+            const [_, book, chapter, verse, text] = match;
+            if (book.toLowerCase() === bookId.toLowerCase() && chapter === String(chapterId)) {
+                resultLines.push(`<span class='verse'><b>${chapter}:${verse}</b> ${text}</span>`);
+                found = true;
+            } else if (found && (book.toLowerCase() !== bookId.toLowerCase() || chapter !== String(chapterId))) {
+                break;
+            } else if (found) {
+                resultLines.push(`<span class='verse'><b>${chapter}:${verse}</b> ${text}</span>`);
+            }
+        }
+    }
     return resultLines;
 }
 

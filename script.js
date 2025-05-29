@@ -106,6 +106,8 @@ function setupMainContentEvents() {
     const chapterSelect = document.getElementById('chapter-select');
     const versionSelect = document.getElementById('version-select');
     const bibleText = document.getElementById('bible-text');
+    const prevBtn = document.getElementById('prev-chapter');
+    const nextBtn = document.getElementById('next-chapter');
     function updateMainContent() {
         loadBibleContent(bibleText, bookSelect.value, chapterSelect.value, versionSelect.value);
     }
@@ -116,9 +118,59 @@ function setupMainContentEvents() {
     });
     chapterSelect.addEventListener('change', updateMainContent);
     versionSelect.addEventListener('change', updateMainContent);
+    // 上一页按钮
+    prevBtn.addEventListener('click', function () {
+        let chapterIdx = chapterSelect.selectedIndex;
+        let changed = false;
+        if (chapterIdx > 0) {
+            chapterSelect.selectedIndex = chapterIdx - 1;
+            changed = true;
+        } else {
+            // 当前是第一章，切换到上一本书的最后一章
+            let bookIdx = bookSelect.selectedIndex;
+            if (bookIdx > 0) {
+                bookSelect.selectedIndex = bookIdx - 1;
+                renderChapterOptions(bookSelect.value);
+                chapterSelect.selectedIndex = chapterSelect.options.length - 1;
+                changed = true;
+            }
+        }
+        updateMainContent();
+        // 对照模式下同步章节
+        const compareCheckbox = document.getElementById('compare-checkbox');
+        const compareSection = document.getElementById('bible-text-compare');
+        const compareSelect = document.getElementById('version-select-compare');
+        if (compareCheckbox && compareCheckbox.checked && compareSection && compareSelect) {
+            loadBibleContent(compareSection, bookSelect.value, chapterSelect.value, compareSelect.value);
+        }
+    });
+    // 下一页按钮
+    nextBtn.addEventListener('click', function () {
+        let chapterIdx = chapterSelect.selectedIndex;
+        let changed = false;
+        if (chapterIdx < chapterSelect.options.length - 1) {
+            chapterSelect.selectedIndex = chapterIdx + 1;
+            changed = true;
+        } else {
+            // 当前是最后一章，切换到下一本书的第一章
+            let bookIdx = bookSelect.selectedIndex;
+            if (bookIdx < bookSelect.options.length - 1) {
+                bookSelect.selectedIndex = bookIdx + 1;
+                renderChapterOptions(bookSelect.value);
+                chapterSelect.selectedIndex = 0;
+                changed = true;
+            }
+        }
+        updateMainContent();
+        // 对照模式下同步章节
+        const compareCheckbox = document.getElementById('compare-checkbox');
+        const compareSection = document.getElementById('bible-text-compare');
+        const compareSelect = document.getElementById('version-select-compare');
+        if (compareCheckbox && compareCheckbox.checked && compareSection && compareSelect) {
+            loadBibleContent(compareSection, bookSelect.value, chapterSelect.value, compareSelect.value);
+        }
+    });
     // 初始化内容
-    //  renderChapterOptions(bookSelect.value); // 保证章节数和书卷同步
-    // chapterSelect.selectedIndex = 0;
     updateMainContent();
 }
 

@@ -76,9 +76,9 @@ function loadBibleContent(target, book, chapter, version) {
     books.forEach(b => { bookNames[b.value] = b.name; });
     const chapterNum = chapter ? chapter.replace('chapter-', '') : '1';
     const versionNames = {
-        cnv: '中文和合本',
-        niv: '新国际版',
-        esv: '英文标准版'
+        hgb: '和合本',
+        kjv: 'kjv版',
+
     };
     //target.innerHTML = `<h2>${bookNames[book] || ''} 第${chapterNum}章 - ${versionNames[version] || ''}</h2><pre>这里是${bookNames[book] || ''}第${chapterNum}章的${versionNames[version] || ''}内容（示例）</pre>`;
     target.innerHTML = loadBibleContentImpl(version, book, chapterNum);

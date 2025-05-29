@@ -107,15 +107,18 @@ async function loadTxtFileChunkedBrowser(bibleId, bookId, chapterId) {
         offset += CHUNK_SIZE;
         if (found === 'done') break;
     }
+    console.log(resultLines.length, '行');
+
     return resultLines;
 }
 
 // 兼容异步，优先分块fetch
 function loadBibleContentImpl(bibleId, bookId, chapterId) {
-    if (data[bibleId] && data[bibleId][bookId] && data[bibleId][bookId][chapterId]) {
-        return data[bibleId][bookId][chapterId];
-    }
     return (async () => {
+        if (data[bibleId] && data[bibleId][bookId] && data[bibleId][bookId][chapterId]) {
+            return data[bibleId][bookId][chapterId];
+        }
+        console.log(`[LOAD] 加载 ${bibleId} ${bookId} ${chapterId} 的内容`);
         const lines = await loadTxtFileChunkedBrowser(bibleId, bookId, chapterId);
         if (!data[bibleId]) data[bibleId] = {};
         if (!data[bibleId][bookId]) data[bibleId][bookId] = {};

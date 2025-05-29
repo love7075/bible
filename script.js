@@ -69,19 +69,17 @@ const books = [
 ];
 
 // 加载对应内容的函数，参数为目标section、书卷、章节、版本
-function loadBibleContent(target, book, chapter, version) {
-    // 这里只是示例，实际应根据book/chapter/version加载内容
-    // 修正：bookNames 应包含所有 books 数据
+async function loadBibleContent(target, book, chapter, version) {
     const bookNames = {};
     books.forEach(b => { bookNames[b.value] = b.name; });
     const chapterNum = chapter ? chapter.replace('chapter-', '') : '1';
     const versionNames = {
         hgb: '和合本',
         kjv: 'kjv版',
-
     };
-    //target.innerHTML = `<h2>${bookNames[book] || ''} 第${chapterNum}章 - ${versionNames[version] || ''}</h2><pre>这里是${bookNames[book] || ''}第${chapterNum}章的${versionNames[version] || ''}内容（示例）</pre>`;
-    target.innerHTML = loadBibleContentImpl(version, book, chapterNum);
+    // 加载内容并渲染
+    const content = await loadBibleContentImpl(version, book, chapterNum);
+    target.innerHTML = `<h2>${bookNames[book] || ''} 第${chapterNum}章 - ${versionNames[version] || ''}</h2>` + content;
 }
 // 主版本切换
 const versionSelect = document.getElementById('version-select');

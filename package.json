@@ -4,13 +4,14 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && cp -r dist/client/* docs/",
-    "build:incremental": "astro build --incremental  && cp -r dist/client/* docs/",
+    "build": "astro build",
+    "build:incremental": "astro build --incremental",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@astrojs/vercel": "^8.1.5",
+    "@astrojs/vercel": "^8.0.4",
     "@tailwindcss/vite": "^4.1.8",
     "@types/jsonwebtoken": "^9.0.9",
     "astro": "^5.9.1",
@@ -18,5 +19,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
     "tailwindcss": "^4.1.8"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }

@@ -1,0 +1,58 @@
+---
+import type { GetStaticPaths } from "astro";
+import { bookList, versionInfo, bookMap } from "../../lib/bibledata";
+import { getCollection, getEntry } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import "../../styles/global.css";
+
+export const getStaticPaths = (() => {
+    const urls = Array();
+    for (const [vkey, vvalue] of Object.entries(versionInfo)) {
+        urls.push({ params: { version: vkey } });
+    }
+    return urls;
+}) satisfies GetStaticPaths;
+
+export const prerender = true;
+
+const { version } = Astro.params as {
+    version: keyof typeof versionInfo;
+};
+---
+
+<Layout>
+    <!-- <div class="flex gap-4">
+        <a href="/">返回首页</a>
+        <p>
+            {
+                Object.entries(versionInfo).map(([vkey, vname]) =>
+                    vkey === version ? (
+                        <span class="underline">{vname}</span>
+                    ) : (
+                        <a href={`/${vkey}/`} class="ps-2">
+                            {vname}
+                        </a>
+                    ),
+                )
+            }
+        </p>
+    </div> -->
+    <p class="text-2xl font-bold">{versionInfo[version]}</p>
+    {
+        bookMap.map((value) => (
+            <div class="flex ps-4 ">
+                <span> {value.name}:</span>
+                <div>
+                    {Array.from(
+                        { length: value.chapters },
+                        (_, i) => i + 1,
+                    ).map((chapterNum) => (
+                        <a href={`/${version}/${value.key}/${chapterNum}`}>
+                            {chapterNum}
+                        </a>
+                    ))}
+                </div>
+            </div>
+        ))
+    }
+</Layout>

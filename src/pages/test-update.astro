@@ -1,0 +1,102 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="测试更新 API">
+  <div class="p-4">
+    <h1 class="text-2xl mb-4">测试更新 API</h1>
+    
+    <div class="mb-4">
+      <label class="block mb-2">版本：</label>
+      <input type="text" id="version" value="zyb" class="border p-2 w-full mb-2">
+    </div>
+
+    <div class="mb-4">
+      <label class="block mb-2">引用ID：</label>
+      <input type="text" id="refId" value="gen_1_1" class="border p-2 w-full mb-2">
+    </div>
+
+    <div class="mb-4">
+      <label class="block mb-2">内容：</label>
+      <textarea id="content" class="border p-2 w-full h-32 mb-2">起初，神创造天地。</textarea>
+    </div>
+
+    <button id="submit" class="bg-blue-500 text-white px-4 py-2 rounded">提交</button>
+
+    <div id="result" class="mt-4 p-4 border hidden">
+      <h2 class="text-xl mb-2">响应结果：</h2>
+      <pre class="bg-gray-100 p-2 rounded"></pre>
+    </div>
+
+    <div id="debug" class="mt-4 p-4 border hidden">
+      <h2 class="text-xl mb-2">调试信息：</h2>
+      <pre class="bg-gray-100 p-2 rounded"></pre>
+    </div>
+  </div>
+
+  <script>
+    const submitButton = document.getElementById('submit');
+    const resultDiv = document.getElementById('result');
+    const resultPre = resultDiv?.querySelector('pre');
+    const debugDiv = document.getElementById('debug');
+    const debugPre = debugDiv?.querySelector('pre');
+
+    submitButton?.addEventListener('click', async () => {
+      const version = (document.getElementById('version') as HTMLInputElement).value;
+      const refId = (document.getElementById('refId') as HTMLInputElement).value;
+      const content = (document.getElementById('content') as HTMLTextAreaElement).value;
+
+      const requestBody = {
+        version,
+        refId,
+        content
+      };
+
+      // 显示调试信息
+      if (debugDiv && debugPre) {
+        debugDiv.classList.remove('hidden');
+        debugPre.textContent = JSON.stringify({
+          requestBody,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }, null, 2);
+      }
+
+      try {
+        const response = await fetch('/api/verses/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        // 获取响应文本
+        const responseText = await response.text();
+        console.log('原始响应:', responseText);
+
+        // 尝试解析 JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          data = {
+            error: '解析响应失败',
+            rawResponse: responseText
+          };
+        }
+        
+        if (resultDiv && resultPre) {
+          resultDiv.classList.remove('hidden');
+          resultPre.textContent = JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        if (resultDiv && resultPre) {
+          resultDiv.classList.remove('hidden');
+          resultPre.textContent = `错误：${error}`;
+        }
+      }
+    });
+  </script>
+</Layout> 

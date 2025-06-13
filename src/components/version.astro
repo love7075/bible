@@ -1,0 +1,14 @@
+---
+
+---
+
+<label>版本:</label><select class="version watch-value"></select>
+<script>
+    import { versionInfo, bookMap } from "../lib/bibledata";
+    import { fillSelectArray } from "../lib/utils";
+    const versions = document.querySelectorAll(".version");
+
+    const selectVersion = versions[0] as HTMLSelectElement;
+
+    fillSelectArray(selectVersion, Object.entries(versionInfo));
+</script>

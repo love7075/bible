@@ -1,0 +1,130 @@
+---
+import type { GetStaticPaths } from "astro";
+import {
+  getNextpage,
+  getPrepage,
+  versionInfo,
+  bookMap,
+} from "../../../lib/bibledata";
+import { getCollection, getEntry } from "astro:content";
+import Layout from "../../../layouts/Layout.astro";
+import "../../../styles/global.css";
+
+export const getStaticPaths = (() => {
+  const urls = Array();
+  for (const [vkey, vvalue] of Object.entries(versionInfo)) {
+    for (let b of bookMap) {
+      for (let i = 1; i <= b.chapters; i++) {
+        urls.push({
+          params: { version: vkey, book: b.key, chapter: i.toString() },
+        });
+      }
+    }
+  }
+
+  return urls;
+}) satisfies GetStaticPaths;
+
+const { version, book, chapter } = Astro.params as {
+  version: keyof typeof versionInfo;
+  book: string;
+  chapter: number;
+};
+const chunk = bookMap.find((v) => v.key == book)?.chunk;
+// console.log(version, book, chapter);
+const contentId = `${version}/${book}/${chapter}`;
+// const allChapters = await getCollection("chapter");
+// const ch = await getCollection("chapter", ({ id, data }) => {
+//   return id != contentId;
+// });
+const ch = await getEntry("chapter", contentId);
+
+const pageId = `${version}/${book}/${chapter}`;
+
+const nextChapter = getNextpage(pageId);
+// console.log(nextChapter);
+const preChapter = getPrepage(pageId);
+const versionName = versionInfo[version];
+const bookName = bookMap.find((b) => b.key === book)?.name;
+// console.log(ch);
+// const { allChapters } = Astro.props;
+// console.log(typeof allChapters);
+// console.log(contentId);
+// console.log("-------");
+
+// const chapterData = allChapters.find((entry) => entry.id === contentId);
+// const chapterData = allChapters[0];
+// console.log(chapterData);
+
+export const prerender = true;
+---
+
+<Layout>
+  <!-- hello world -->
+  <!-- <div>{version}-{book}-{chapter}</div> --><!-- <div>{Object.entries(col[0])}</div> -->
+  <!-- <div>{chapter}</div> -->
+  <!-- <div>{chapterData}</div> -->
+
+  <div
+    class="flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm"
+  >
+    <!-- 左侧：返回首页 + 当前章节 -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+      <a href="/" class="text-blue-600">返回首页</a>
+      <span>
+        {versionName} —
+        <a href={`/${version}`} class="underline text-blue-600">目录</a> —
+        {bookName}
+        {chapter}
+      </span>
+    </div>
+
+    <!-- 右侧：上一章 / 下一章 -->
+    <div class="flex justify-center gap-4 text-blue-600">
+      <a href={preChapter}>上一章</a>
+      <a href={nextChapter}>下一章</a>
+    </div>
+  </div>
+
+  <!-- {preChapter}----{nextChapter} -->
+
+  <div class="p-2 gray-400">
+    {
+      ch?.data.verses ? (
+        Object.values(ch.data.verses).map((value) => (
+          <p>
+            {value.num}
+            {value.verse}
+          </p>
+        ))
+      ) : (
+        <div>Chapter not found.</div>
+      )
+    }
+  </div>
+  <div class="flex justify-center gap-4 p-4">
+    <a href={preChapter}>上一章</a><a href={nextChapter}>下一章</a>
+  </div>
+  <!-- <script>
+    // console.log(window.location.pathname);
+    const selectBooks = document.getElementById("books") as HTMLSelectElement;
+    const selectVersion = document.getElementById(
+      "version",
+    ) as HTMLSelectElement;
+    const selectChapters = document.getElementById(
+      "chapters",
+    ) as HTMLSelectElement;
+
+    const selects = document.querySelectorAll(".watch-value");
+    console.log(selects);
+    selects.forEach((select) => {
+      select.addEventListener("change", function (event) {
+        // 处理逻辑
+        console.log(`New value: ${event.target}`);
+
+        const new_url = `/${selectVersion.value}/${selectBooks.value}/${selectChapters.value}`;
+        window.location.href = new_url;
+      });
+    });
+  </script> -->
+</Layout>

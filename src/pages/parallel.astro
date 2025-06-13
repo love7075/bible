@@ -1,0 +1,225 @@
+---
+// import Version from "../components/version.astro";
+// import Book from "../components/books.astro";
+import "../styles/global.css";
+import Layout from "../layouts/Layout.astro";
+export const prerender = true;
+---
+
+<Layout title="平行阅读">
+    <div class="flex space-x-2">
+        <a href="/" class="mr-4">首页</a>
+        <label>版本:</label><select id="version1" class="mr-4"></select>
+
+        <label>书卷:</label><select id="books" class="mr-4"></select>
+
+        <label>章节:</label><select id="chapters" class="w-16 mr-4"></select>
+
+        <label>版本:</label><select id="version2" class="mr-4"></select>
+        <button class="prepage">上一章</button>
+        <button class="nextpage">下一章</button>
+    </div>
+    <div class="flex p-2">
+        <div id="content1" class="flex-1"></div>
+        <div id="content2" class="flex-1"></div>
+    </div>
+    <div class="flex justify-center gap-4">
+        <button class="prepage">上一章</button>
+        <button class="nextpage">下一章</button>
+    </div>
+    <script>
+        import {
+            versionInfo,
+            bookMap,
+            getNextpage,
+            getPrepage,
+        } from "../lib/bibledata";
+        import { fillSelectNumber, fillSelectArray } from "../lib/utils";
+
+        const version1 = document.getElementById(
+            "version1",
+        ) as HTMLSelectElement;
+        const version2 = document.getElementById(
+            "version2",
+        ) as HTMLSelectElement;
+
+        const selectChapters = document.getElementById(
+            "chapters",
+        ) as HTMLSelectElement;
+        const selectBooks = document.getElementById(
+            "books",
+        ) as HTMLSelectElement;
+        const bookList: [string, string][] = bookMap.map((item) => [
+            item.key,
+            item.name,
+        ]);
+        fillSelectArray(version1, Object.entries(versionInfo));
+        fillSelectArray(version2, Object.entries(versionInfo));
+        fillSelectArray(selectBooks, bookList);
+
+        // versions.forEach((v) => ((v as HTMLSelectElement).selectedIndex = 0));
+
+        //内容布局
+        const content1 = document.getElementById("content1");
+        const content2 = document.getElementById("content2");
+        // 缓存已加载的 chunk 数据
+        const chunkCache = new Map<string, any>();
+
+        async function loadChunkData(chunkUrl: string): Promise<any> {
+            // 如果缓存中已有数据，直接返回
+            if (chunkCache.has(chunkUrl)) {
+                return chunkCache.get(chunkUrl);
+            }
+
+            // 否则从网络加载
+            const response = await fetch(chunkUrl);
+            const chunkData = await response.json();
+            
+            // 存入缓存
+            chunkCache.set(chunkUrl, chunkData);
+            return chunkData;
+        }
+
+        async function fetchJson(
+            url: string,
+            content: HTMLElement,
+            bookKey: string,
+            chapterNum: number
+        ): Promise<void> {
+            content.innerHTML = "";
+            try {
+                // 使用缓存的 chunk 数据
+                const chunkData = await loadChunkData(url);
+                
+                // 在数组中查找当前书卷和章节的经文
+                const chapterData = chunkData.find(
+                    (item: { book: string; chapter: number }) => 
+                        item.book === bookKey && item.chapter === chapterNum
+                );
+                
+                if (!chapterData || !chapterData.verses) {
+                    throw new Error(`Chapter ${chapterNum} not found for book ${bookKey}`);
+                }
+                
+                for (const verse of chapterData.verses) {
+                    const p = document.createElement("p");
+                    p.innerHTML = `${verse.num} ${verse.verse}`;
+                    content.appendChild(p);
+                }
+            } catch (error) {
+                console.error('Error loading chapter:', error);
+                const errorMessage = error instanceof Error ? error.message : '未知错误';
+                content.innerHTML = `<p>加载章节内容时出错: ${errorMessage}</p>`;
+            }
+        }
+
+        function syncRowHeights() {
+            const rows1 = document.querySelectorAll("#content1 p");
+            const rows2 = document.querySelectorAll("#content2 p");
+
+            // console.log("rows1", rows1);
+            const len = Math.min(rows1.length, rows2.length);
+
+            for (let i = 0; i < len; i++) {
+                // 先清除之前设置的高度
+                (rows1[i] as HTMLElement).style.height = "";
+                (rows2[i] as HTMLElement).style.height = "";
+
+                const h1 = (rows1[i] as HTMLElement).offsetHeight;
+                const h2 = (rows2[i] as HTMLElement).offsetHeight;
+                const maxHeight = Math.max(h1, h2);
+
+                (rows1[i] as HTMLElement).style.height = maxHeight + "px";
+                (rows2[i] as HTMLElement).style.height = maxHeight + "px";
+            }
+        }
+        async function loadAndSync() {
+            if (content1 && content2) {
+                const currentBook = bookMap.find(book => book.key === selectBooks.value);
+                if (!currentBook) return;
+                
+                const chunk = currentBook.chunk || 1; // 默认使用1作为chunk值
+                const chapterNum = parseInt(selectChapters.value);
+                
+                const url1 = `/version/${version1.value}/chunk${chunk}.json`;
+                const url2 = `/version/${version2.value}/chunk${chunk}.json`;
+                
+                await fetchJson(url1, content1, currentBook.key, chapterNum);
+                await fetchJson(url2, content2, currentBook.key, chapterNum);
+                syncRowHeights();
+            }
+        }
+        function bookChanged() {
+            fillSelectNumber(
+                selectChapters,
+                bookMap.find((v) => v.key === selectBooks.value)?.chapters ?? 0,
+            );
+            selectChapters.selectedIndex = 0;
+        }
+        version1.selectedIndex = 0;
+        version2.selectedIndex = 1;
+        selectBooks.selectedIndex = 0;
+        bookChanged(); // 确保章节下拉菜单在加载时被正确填充
+        selectChapters.selectedIndex = 0;
+        version1.addEventListener("change", () => loadAndSync());
+        version2.addEventListener("change", () => loadAndSync());
+        selectChapters.addEventListener("change", () => loadAndSync());
+        selectBooks.addEventListener("change", () => bookChanged());
+        // version1.dispatchEvent(new Event("change", { bubbles: true }));
+        // selectBooks.dispatchEvent(new Event("change", { bubbles: true }));
+        // selectChapters.dispatchEvent(new Event("change", { bubbles: true }));
+
+        window.addEventListener("DOMContentLoaded", loadAndSync);
+
+        document.querySelectorAll(".nextpage").forEach((b) => {
+            console.log("add events");
+            b.addEventListener("click", () => {
+                // console.log("button click");
+                let exist_next = false;
+                if (
+                    selectChapters.selectedIndex <
+                    selectChapters.options.length - 1
+                ) {
+                    selectChapters.selectedIndex =
+                        selectChapters.selectedIndex + 1;
+                    exist_next = true;
+                } else if (
+                    selectBooks.selectedIndex <
+                    selectBooks.options.length - 1
+                ) {
+                    selectChapters.selectedIndex = 0;
+
+                    selectBooks.selectedIndex = selectBooks.selectedIndex + 1;
+                    exist_next = true;
+                }
+                if (exist_next) {
+                    loadAndSync();
+                    window.scrollTo(0, 0);
+                }
+            });
+        });
+        document.querySelectorAll(".prepage").forEach((b) => {
+            console.log("add events");
+            b.addEventListener("click", () => {
+                // console.log("button click");
+                let exist_next = false;
+                if (selectChapters.selectedIndex > 0) {
+                    selectChapters.selectedIndex =
+                        selectChapters.selectedIndex - 1;
+                    exist_next = true;
+                } else if (selectBooks.selectedIndex > 0) {
+                    selectBooks.selectedIndex = selectBooks.selectedIndex - 1;
+                    bookChanged();
+                    selectChapters.selectedIndex =
+                        selectChapters.options.length - 1;
+
+                    exist_next = true;
+                }
+                if (exist_next) {
+                    window.scrollTo(0, 0);
+                    loadAndSync();
+                }
+            });
+        });
+    </script>
+</Layout>

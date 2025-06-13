@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+---
+
+<div class="flex gap-2">
+    <label>书卷:</label><select id="books" class="watch-value"></select>
+</div>
+<div class="flex gap-2">
+    <label>章节:</label><select id="chapters" class="watch-value w-16"></select>
+</div>
+<script>
+    import { versionInfo, bookMap } from "../lib/bibledata";
+    import { fillSelectNumber, fillSelectArray } from "../lib/utils";
+    const bookList: [string, string][] = bookMap.map((item) => [
+        item.key,
+        item.name,
+    ]);
+    // console.log(bookList);
+    const selectBooks = document.getElementById("books") as HTMLSelectElement;
+
+    const selectChapters = document.getElementById(
+        "chapters",
+    ) as HTMLSelectElement;
+    fillSelectArray(selectBooks, bookList);
+    selectBooks.addEventListener("change", () => {
+        fillSelectNumber(
+            selectChapters,
+            bookMap.find((v) => v.key === selectBooks.value)?.chapters ?? 0,
+        );
+    });
+    //kjv/gen/26
+    const url_parts = window.location.pathname.split("/");
+    selectBooks.value = url_parts[2];
+    // console.log(url_parts[1]);
+    console.log(url_parts[2]);
+    selectBooks.dispatchEvent(new Event("change", { bubbles: true }));
+    selectChapters.value = url_parts[3];
+</script>

@@ -1,0 +1,22 @@
+{
+  "name": "2-laytest",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && cp -r dist/client/* docs/",
+    "build:incremental": "astro build --incremental",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/vercel": "^8.1.5",
+    "@tailwindcss/vite": "^4.1.8",
+    "@types/jsonwebtoken": "^9.0.9",
+    "astro": "^5.9.1",
+    "dotenv": "^16.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.17.0",
+    "tailwindcss": "^4.1.8"
+  }
+}

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && cp -r dist/client/* docs/",
-    "build:incremental": "astro build --incremental",
+    "build:incremental": "astro build --incremental  && cp -r dist/client/* docs/",
     "preview": "astro preview",
     "astro": "astro"
   },

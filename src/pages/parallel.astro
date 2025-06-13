@@ -74,7 +74,7 @@ export const prerender = true;
             // 否则从网络加载
             const response = await fetch(chunkUrl);
             const chunkData = await response.json();
-            
+
             // 存入缓存
             chunkCache.set(chunkUrl, chunkData);
             return chunkData;
@@ -84,31 +84,34 @@ export const prerender = true;
             url: string,
             content: HTMLElement,
             bookKey: string,
-            chapterNum: number
+            chapterNum: number,
         ): Promise<void> {
             content.innerHTML = "";
             try {
                 // 使用缓存的 chunk 数据
                 const chunkData = await loadChunkData(url);
-                
+
                 // 在数组中查找当前书卷和章节的经文
                 const chapterData = chunkData.find(
-                    (item: { book: string; chapter: number }) => 
-                        item.book === bookKey && item.chapter === chapterNum
+                    (item: { book: string; chapter: number }) =>
+                        item.book === bookKey && item.chapter === chapterNum,
                 );
-                
+
                 if (!chapterData || !chapterData.verses) {
-                    throw new Error(`Chapter ${chapterNum} not found for book ${bookKey}`);
+                    throw new Error(
+                        `Chapter ${chapterNum} not found for book ${bookKey}`,
+                    );
                 }
-                
+
                 for (const verse of chapterData.verses) {
                     const p = document.createElement("p");
                     p.innerHTML = `${verse.num} ${verse.verse}`;
                     content.appendChild(p);
                 }
             } catch (error) {
-                console.error('Error loading chapter:', error);
-                const errorMessage = error instanceof Error ? error.message : '未知错误';
+                console.error("Error loading chapter:", error);
+                const errorMessage =
+                    error instanceof Error ? error.message : "未知错误";
                 content.innerHTML = `<p>加载章节内容时出错: ${errorMessage}</p>`;
             }
         }
@@ -135,15 +138,17 @@ export const prerender = true;
         }
         async function loadAndSync() {
             if (content1 && content2) {
-                const currentBook = bookMap.find(book => book.key === selectBooks.value);
+                const currentBook = bookMap.find(
+                    (book) => book.key === selectBooks.value,
+                );
                 if (!currentBook) return;
-                
+
                 const chunk = currentBook.chunk || 1; // 默认使用1作为chunk值
                 const chapterNum = parseInt(selectChapters.value);
-                
+
                 const url1 = `/version/${version1.value}/chunk${chunk}.json`;
                 const url2 = `/version/${version2.value}/chunk${chunk}.json`;
-                
+
                 await fetchJson(url1, content1, currentBook.key, chapterNum);
                 await fetchJson(url2, content2, currentBook.key, chapterNum);
                 syncRowHeights();
@@ -164,7 +169,11 @@ export const prerender = true;
         version1.addEventListener("change", () => loadAndSync());
         version2.addEventListener("change", () => loadAndSync());
         selectChapters.addEventListener("change", () => loadAndSync());
-        selectBooks.addEventListener("change", () => bookChanged());
+        selectBooks.addEventListener("change", () => {
+            bookChanged();
+            loadAndSync();
+        });
+
         // version1.dispatchEvent(new Event("change", { bubbles: true }));
         // selectBooks.dispatchEvent(new Event("change", { bubbles: true }));
         // selectChapters.dispatchEvent(new Event("change", { bubbles: true }));

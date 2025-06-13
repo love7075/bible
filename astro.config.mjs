@@ -5,12 +5,13 @@ import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
-    output: 'server',
-    adapter: vercel({
-        webAnalytics: {
-            enabled: true
-        }
-    }),
+    output: 'static',
+    // adapter: vercel({
+    //     webAnalytics: {
+    //         enabled: true
+    //     },
+    //     isr: true,
+    // }),
     vite: {
         plugins: [tailwindcss()],
         envPrefix: ['MONGODB_', 'NODE_'],

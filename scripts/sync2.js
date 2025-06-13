@@ -1,6 +1,6 @@
-require('dotenv').config(); // 加载 .env 文件
+import 'dotenv/config'; // 加载 .env 文件
 
-const { MongoClient } = require('mongodb');
+import { MongoClient } from 'mongodb';
 const local_dbName = "bibleDB"
 const remote_dbName = "bibleDB"
 

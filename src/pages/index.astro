@@ -5,11 +5,10 @@ import { versionInfo, bookMap } from "../lib/bibledata";
 import * as index from "../md/index.md";
 const content = await index.compiledContent();
 //content是带有html标签的字符串
-//把这个字符中 所有以“<p>我：”的开头的段落加上红色字体，即使<p>我:.*</p>
+
 export const prerender = true;
 ---
 
 <Layout title="圣经阅读">
-     
     <div set:html={content} />
 </Layout>

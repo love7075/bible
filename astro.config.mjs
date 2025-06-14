@@ -6,7 +6,7 @@ import vercel from '@astrojs/vercel';
 // https://astro.build/config
 export default defineConfig({
     output: 'static',
-    site: 'https://love7075.github.io',
+
     base: '/', // TODO: 将 'your-repo-name' 替换为你的 GitHub 仓库名
     // adapter: vercel({
     //     webAnalytics: {

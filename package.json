@@ -8,7 +8,7 @@
     "build:incremental": "astro build --incremental",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages --nojekyll -d dist"
   },
   "dependencies": {
     "@astrojs/vercel": "^8.0.4",
